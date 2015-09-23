@@ -59,7 +59,6 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 
     protected final SectionContainer<T, S> sections;
     protected final LayoutOrganizerPanel panel = new LayoutOrganizerPanel();
-    protected final int space;
 
     private final Point point = new Point();
     private final Rectangle bounds = new Rectangle();
@@ -75,8 +74,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
     private boolean dragModeOn;    // true means that drag mode is currently turned on
     private Image dragImage;    // this image is shown under cursor in drag mode
 
-    protected SectionViewer(int space, int maxSections) {
-        this.space = space;
+    protected SectionViewer(int maxSections) {
         setViewportView(panel);
         sections = new SectionContainer<T, S>(this, maxSections);
         sectionBackgroundProvider = getSectionBackgroundProvider();
@@ -110,10 +108,6 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 
     protected int getMaxSections() {
         return sections.getMaxSections();
-    }
-
-    public int getSpace() {
-        return space;
     }
 
     boolean isDragModeOn() {

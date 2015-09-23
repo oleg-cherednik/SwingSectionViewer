@@ -1,9 +1,5 @@
 package cop.swing.demo;
 
-import cop.swing.controls.layouts.LayoutOrganizer;
-import cop.swing.controls.layouts.SingleColumnLayout;
-import cop.swing.controls.layouts.SingleRowLayout;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -73,8 +69,6 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
 
     static class SettingsPanel extends JPanel implements ActionListener, ChangeListener {
         private static final long serialVersionUID = -7738468553704362158L;
-        private static final SingleColumnLayout SINGLE_COLUMN = new SingleColumnLayout();
-        private static final SingleRowLayout SINGLE_ROW = new SingleRowLayout();
 
         private int id = 1;
 
@@ -170,29 +164,16 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
 //                panel.setLayoutOrganizer(SINGLE_COLUMN);
             } else if (event.getSource() == rowStrategy) {
 //                panel.setLayoutOrganizer(SINGLE_ROW);
-            } else if (event.getSource() == alignmentCombo) {
-                Alignment alignment = (Alignment)alignmentCombo.getSelectedItem();
-                LayoutOrganizer layoutOrganizer = sectionViewer.getLayoutOrganizer();
-
-                if (layoutOrganizer instanceof SingleColumnLayout)
-                    ((SingleColumnLayout)layoutOrganizer).setAlignment(alignment.value);
-                else if (layoutOrganizer instanceof SingleRowLayout)
-                    ((SingleRowLayout)layoutOrganizer).setAlignment(alignment.value);
-
-                sectionViewer.updateUI();
-            }
+            } else if (event.getSource() == alignmentCombo)
+                sectionViewer.setAlignment(((Alignment)alignmentCombo.getSelectedItem()).value);
         }
 
         // ========== ChangeListener ==========
 
         @Override
         public void stateChanged(ChangeEvent event) {
-            if (event.getSource() == spaceSpinner) {
-                int space = (Integer)spaceSpinner.getValue();
-                SINGLE_COLUMN.setSpace(space);
-                SINGLE_ROW.setSpace(space);
-                sectionViewer.updateUI();
-            }
+            if (event.getSource() == spaceSpinner)
+                sectionViewer.setSpace((Integer)spaceSpinner.getValue());
         }
 
         // ========== static ==========

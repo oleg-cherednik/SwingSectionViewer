@@ -9,7 +9,7 @@ import java.awt.Component;
  * @since 18.07.2015
  */
 public abstract class SimpleSectionViewer<T extends Component, S extends Section<T>> extends SectionViewer<T, S> {
-    protected SimpleSectionViewer(int space, int maxSections) {
-        super(space, maxSections);
+    protected SimpleSectionViewer(int maxSections) {
+        super(maxSections);
     }
 }
