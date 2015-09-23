@@ -1,6 +1,5 @@
 package cop.swing.controls.sections;
 
-import cop.swing.utils.pool.QueuePool;
 import org.apache.commons.collections.CollectionUtils;
 
 import javax.swing.JScrollPane;
@@ -28,7 +27,6 @@ final class SectionContainer<T extends Component, S extends Section<T>> implemen
     private final Rectangle bounds = new Rectangle();
     private final Point point = new Point();
 
-    private final LocalPool pool = new LocalPool();
     private final List<S> sections = new ArrayList<S>();
     private final List<S> visibleSections = new ArrayList<S>();
     private final SectionViewer<T, S> viewer;
@@ -126,29 +124,8 @@ final class SectionContainer<T extends Component, S extends Section<T>> implemen
     }
 
     public void clear() {
-        pool.release(sections);
         sections.clear();
         visibleSections.clear();
-    }
-
-    public S acquire() {
-        return pool.acquire();
-    }
-
-    public Collection<S> acquire(int count) {
-        Collection<S> sections = pool.acquire(count);
-
-        if (CollectionUtils.isNotEmpty(sections))
-            for (S section : sections)
-                section.activate();
-
-        return sections;
-    }
-
-    public boolean release(S section) {
-        boolean res = pool.release(section);
-        sections.remove(section);
-        return res;
     }
 
     private void updateVisibleSections(Component comp) {
@@ -187,14 +164,5 @@ final class SectionContainer<T extends Component, S extends Section<T>> implemen
 
     public void stateChanged(ChangeEvent event) {
         updateVisibleSections((Component)event.getSource());
-    }
-
-    // ========== local pool ==========
-
-    private class LocalPool extends QueuePool<S> {
-        @Override
-        protected S create() {
-            return viewer.create();
-        }
     }
 }

@@ -153,7 +153,6 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
         public void actionPerformed(ActionEvent event) {
             if (event.getSource() == addSection) {
                 LocalSection section = new LocalSection(id++);
-                section.activate();
                 sectionViewer.addSection(section);
             } else if (event.getSource() == addGlue) {
 //                panel.addComp(panel.getLayoutOrganizer() == SINGLE_COLUMN ? Box.createVerticalGlue() : Box.createHorizontalGlue());

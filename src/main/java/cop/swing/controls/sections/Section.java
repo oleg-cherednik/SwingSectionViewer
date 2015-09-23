@@ -1,7 +1,5 @@
 package cop.swing.controls.sections;
 
-import cop.swing.utils.pool.Poolable;
-
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 import java.awt.AlphaComposite;
@@ -23,7 +21,7 @@ import java.awt.geom.Rectangle2D;
  * @author Oleg Cherednik
  * @since 18.07.2015
  */
-public abstract class Section<T extends Component> extends JPanel implements Poolable {
+public abstract class Section<T extends Component> extends JPanel {
     private static final Composite ALPHA = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1);
 
     private final Rectangle2D.Double rect = new Rectangle2D.Double();
@@ -70,24 +68,6 @@ public abstract class Section<T extends Component> extends JPanel implements Poo
     // ========== abstract ==========
 
     public abstract T getDelegate();
-
-    // ========== Poolable ==========
-
-    @Override
-    public void activate() {
-        for (Component component : getComponents())
-            if (component instanceof Poolable)
-                ((Poolable)component).activate();
-    }
-
-    @Override
-    public void passivate() {
-        for (Component component : getComponents())
-            if (component instanceof Poolable)
-                ((Poolable)component).passivate();
-
-        setViewer(null);
-    }
 
     // ========== Component ==========
 

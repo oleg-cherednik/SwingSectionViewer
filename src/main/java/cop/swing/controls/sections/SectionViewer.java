@@ -2,11 +2,9 @@ package cop.swing.controls.sections;
 
 import cop.swing.controls.layouts.LayoutNode;
 import cop.swing.controls.layouts.LayoutOrganizer;
-import cop.swing.panels.CreateFactory;
 import cop.swing.panels.LayoutOrganizerPanel;
 import cop.swing.providers.BackgroundProvider;
 import cop.swing.providers.ParentBackgroundProvider;
-import cop.swing.utils.pool.Poolable;
 import org.apache.commons.collections.CollectionUtils;
 
 import javax.swing.BorderFactory;
@@ -29,7 +27,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -51,7 +48,7 @@ import static javax.swing.SwingUtilities.isLeftMouseButton;
  * @author Oleg Cherednik
  * @since 18.07.2015
  */
-public abstract class SectionViewer<T extends Component, S extends Section<T>> extends JScrollPane implements AWTEventListener, CreateFactory<S>, Poolable {
+public abstract class SectionViewer<T extends Component, S extends Section<T>> extends JScrollPane implements AWTEventListener {
     protected static final long EVENT_MASK = MOUSE_MOTION_EVENT_MASK | MOUSE_EVENT_MASK | KEY_EVENT_MASK;
     private static final Composite ALPHA_HALF = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
 
@@ -76,7 +73,6 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
     private S underMouseSection;
     private boolean dropBlock;    // temporary block section drop to next position to exclude visual gliches
     private boolean dragModeOn;    // true means that drag mode is currently turned on
-    protected boolean active;
     private Image dragImage;    // this image is shown under cursor in drag mode
 
     protected SectionViewer(int space, int maxSections) {
@@ -104,9 +100,6 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 //        mainPanelDecorator.removeComponentListener(sections);
 //        scrollPane.getViewport().removeChangeListener(sections);
 
-        if (!active)
-            return;
-
 //        mainPanelDecorator.addComponentListener(sections);
 
         if (draggable)
@@ -125,10 +118,6 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 
     boolean isDragModeOn() {
         return dragModeOn;
-    }
-
-    protected final S acquireSection() {
-        return sections.acquire();
     }
 
     public final List<S> getSections() {
@@ -188,43 +177,25 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
         update();
     }
 
-    public void addSection() {
-        if (sections.size() >= sections.getMaxSections())
-            return;
-
-        S section = acquireSection();
-
-        if (section == null)
-            return;
-
-        sections.add(section);
-
-//        if (!sections.isEmpty())
-//            panel.removeLast();
-
-        panel.addComp(section.getDelegate());//, panel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
-        update();
-    }
-
-    public void addNewSectionAfter(S section) {
-        if (sections.isFull())
-            return;
-
-        int pos = getSectionPosition(section);
-        section = acquireSection();
-
-        sections.add(pos + 1, section);
-
-        Collection<Component> components = new ArrayList<>(sections.size() + 1);
-
-        for (Section<T> sec : sections.getSections())
-            components.add(sec);
-
-        components.add(panel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
-
-        panel.setComp(components);
-        update();
-    }
+//    public void addNewSectionAfter(S section) {
+//        if (sections.isFull())
+//            return;
+//
+//        int pos = getSectionPosition(section);
+//        section = acquireSection();
+//
+//        sections.add(pos + 1, section);
+//
+//        Collection<Component> components = new ArrayList<>(sections.size() + 1);
+//
+//        for (Section<T> sec : sections.getSections())
+//            components.add(sec);
+//
+//        components.add(panel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
+//
+//        panel.setComp(components);
+//        update();
+//    }
 
     public final Color getSectionBackground(S section) {
         int pos = getSectionPosition(section);
@@ -428,33 +399,6 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
         sections.clear();
         panel.removeAll();
     }
-
-    // ========== Poolable ==========
-
-    @Override
-    public void activate() {
-        clear();
-        active = true;
-        updateListener();
-    }
-
-    @Override
-    public void passivate() {
-        active = false;
-        updateListener();
-        clear();
-    }
-
-    // ========== CreateFactory ==========
-
-    /**
-     * This method is called each time when new section instance should be create. {@link SectionViewer} contains
-     * special pool to store unused section instances, therefore <b>DO NOT INVOKE</b> this method directly. Do use
-     * {@link #acquireSection()} instead.
-     *
-     * @return absolute new section instance
-     */
-    public abstract S create();
 
     // ========== AWTEventListener ==========
 
