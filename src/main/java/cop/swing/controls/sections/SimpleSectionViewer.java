@@ -12,4 +12,9 @@ public abstract class SimpleSectionViewer<T extends Component, S extends Section
     protected SimpleSectionViewer(int space, int maxSections) {
         super(space, maxSections);
     }
+
+    @Override
+    public S create() {
+        return null;
+    }
 }

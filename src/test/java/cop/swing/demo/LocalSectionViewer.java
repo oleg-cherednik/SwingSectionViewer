@@ -2,8 +2,6 @@ package cop.swing.demo;
 
 import cop.swing.controls.sections.SectionViewer;
 
-import java.awt.Color;
-
 /**
  * @author Oleg Cherednik
  * @since 18.07.2015
@@ -14,7 +12,8 @@ class LocalSectionViewer extends SectionViewer<LocalSection.MainPart, LocalSecti
     protected LocalSectionViewer() {
         super(5, UNLIMITED);
         createMainLayout();
-        setBackground(Color.green);
+        activate();
+        setDraggable(true);
     }
     // ========== CreateFactory ==========
 

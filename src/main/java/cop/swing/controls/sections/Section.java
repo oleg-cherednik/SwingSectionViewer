@@ -69,7 +69,7 @@ public abstract class Section<T extends Component> extends JPanel implements Poo
 
     // ========== abstract ==========
 
-    public abstract T getMainPart();
+    public abstract T getDelegate();
 
     // ========== Poolable ==========
 

@@ -1,8 +1,7 @@
 package cop.swing.controls.sections;
 
 import cop.swing.controls.layouts.LayoutNode;
-import cop.swing.controls.layouts.SingleColumnLayout;
-import cop.swing.controls.scroll.JScrollPaneExt;
+import cop.swing.controls.layouts.LayoutOrganizer;
 import cop.swing.panels.CreateFactory;
 import cop.swing.panels.LayoutOrganizerPanel;
 import cop.swing.providers.BackgroundProvider;
@@ -11,15 +10,12 @@ import cop.swing.utils.pool.Poolable;
 import org.apache.commons.collections.CollectionUtils;
 
 import javax.swing.BorderFactory;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.validation.constraints.NotNull;
 import java.awt.AWTEvent;
 import java.awt.AlphaComposite;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Composite;
@@ -55,8 +51,7 @@ import static javax.swing.SwingUtilities.isLeftMouseButton;
  * @author Oleg Cherednik
  * @since 18.07.2015
  */
-public abstract class SectionViewer<T extends Component, S extends Section<T>> extends JPanel
-        implements AWTEventListener, CreateFactory<S>, Poolable {
+public abstract class SectionViewer<T extends Component, S extends Section<T>> extends JScrollPane implements AWTEventListener, CreateFactory<S>, Poolable {
     protected static final long EVENT_MASK = MOUSE_MOTION_EVENT_MASK | MOUSE_EVENT_MASK | KEY_EVENT_MASK;
     private static final Composite ALPHA_HALF = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
 
@@ -65,8 +60,8 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 
     public final Border selectedBorder = BorderFactory.createLineBorder(SELECTION_COLOR, 4);
 
-    protected final LayoutOrganizerPanel mainPanel;
     protected final SectionContainer<T, S> sections;
+    protected final LayoutOrganizerPanel panel = new LayoutOrganizerPanel();
     protected final int space;
 
     private final Point point = new Point();
@@ -83,14 +78,16 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
     private boolean dragModeOn;    // true means that drag mode is currently turned on
     protected boolean active;
     private Image dragImage;    // this image is shown under cursor in drag mode
-    private Component mainPanelDecorator;   // by this component we can check visible ared (either JScrollPanel or not)
-    protected final JScrollPane scrollPane = new JScrollPaneExt();
 
     protected SectionViewer(int space, int maxSections) {
         this.space = space;
+        setViewportView(panel);
         sections = new SectionContainer<T, S>(this, maxSections);
-        mainPanel = createMainPart(space);
         sectionBackgroundProvider = getSectionBackgroundProvider();
+    }
+
+    public final LayoutOrganizer getLayoutOrganizer() {
+        return panel.getLayoutOrganizer();
     }
 
     protected BackgroundProvider getSectionBackgroundProvider() {
@@ -104,18 +101,18 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 
     private void updateListener() {
         getToolkit().removeAWTEventListener(this);
-        mainPanelDecorator.removeComponentListener(sections);
-        scrollPane.getViewport().removeChangeListener(sections);
+//        mainPanelDecorator.removeComponentListener(sections);
+//        scrollPane.getViewport().removeChangeListener(sections);
 
         if (!active)
             return;
 
-        mainPanelDecorator.addComponentListener(sections);
+//        mainPanelDecorator.addComponentListener(sections);
 
         if (draggable)
             getToolkit().addAWTEventListener(this, EVENT_MASK);
 
-        scrollPane.getViewport().addChangeListener(sections);
+//        scrollPane.getViewport().addChangeListener(sections);
     }
 
     protected int getMaxSections() {
@@ -159,26 +156,24 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
     }
 
     protected void createMainLayout() {
-        setLayout(new BorderLayout());
-        add(mainPanelDecorator = modify(mainPanel), BorderLayout.CENTER);
+//        setLayout(new BorderLayout());
+//        add(mainPanelDecorator = panel, BorderLayout.CENTER);
     }
 
-    protected Component modify(Component view) {
-        scrollPane.setViewportView(view);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        return scrollPane;
-    }
+//    protected Component modify(Component view) {
+//        scrollPane.setViewportView(view);
+//        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+//        return scrollPane;
+//    }
 
     public void addSection(S section) {
         if (section == null)
             return;
 
         sections.add(section);
-
-        mainPanel.setComp(sections.getSections());
-        mainPanel.addComp(mainPanel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
-
+        panel.addComp(section.getDelegate());
         update();
+
     }
 
     public void addSections(Collection<S> sections) {
@@ -187,13 +182,13 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 
         this.sections.addAll(sections);
 
-        mainPanel.setComp(this.sections.getSections());
-        mainPanel.addComp(mainPanel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
+        panel.setComp(this.sections.getSections());
+        panel.addComp(panel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
 
         update();
     }
 
-    public void addNewSection() {
+    public void addSection() {
         if (sections.size() >= sections.getMaxSections())
             return;
 
@@ -204,10 +199,10 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 
         sections.add(section);
 
-        if (!sections.isEmpty())
-            mainPanel.removeLast();
+//        if (!sections.isEmpty())
+//            panel.removeLast();
 
-        mainPanel.addComp(section, mainPanel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
+        panel.addComp(section.getDelegate());//, panel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
         update();
     }
 
@@ -225,26 +220,26 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
         for (Section<T> sec : sections.getSections())
             components.add(sec);
 
-        components.add(mainPanel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
+        components.add(panel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
 
-        mainPanel.setComp(components);
+        panel.setComp(components);
         update();
     }
 
     public final Color getSectionBackground(S section) {
         int pos = getSectionPosition(section);
-        int total = mainPanel.getComponentCount();
+        int total = panel.getComponentCount();
         return sectionBackgroundProvider.getBackground(pos, total);
     }
 
     public int getSectionPosition(S section) {
-        int total = mainPanel.getComponentCount();
+        int total = panel.getComponentCount();
 
         if (total == 0 || section == null)
             return -1;
 
         for (int i = 0; i < total; i++)
-            if (mainPanel.getComponent(i) == section)
+            if (panel.getComponent(i) == section)
                 return i;
 
         return -1;
@@ -257,7 +252,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
             return;
 
         sections.remove(section);
-        mainPanel.remove(mainPanel.getComponent(pos));
+        panel.remove(panel.getComponent(pos));
         update();
     }
 
@@ -272,16 +267,16 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
     public final void setFirstVisiblePosition(int pos) {
         S section = sections.get(pos);
 
-        if (section == null || scrollPane.getViewport() == null)
+        if (section == null/* || scrollPane.getViewport() == null*/)
             return;
 
         section.getBounds(bounds);
         point.x = bounds.x;
         point.y = bounds.y;
 
-        JViewport viewport = scrollPane.getViewport();
-        point.y = Math.min(viewport.getViewSize().height - viewport.getVisibleRect().height, point.y);
-        viewport.setViewPosition(point);
+//        JViewport viewport = scrollPane.getViewport();
+//        point.y = Math.min(viewport.getViewSize().height - viewport.getVisibleRect().height, point.y);
+//        viewport.setViewPosition(point);
     }
 
     private boolean isEventEnabled(AWTEvent event) {
@@ -297,7 +292,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
         point.x = event.getX();
         point.y = event.getY();
 
-        convertPoint(event.getComponent(), point, mainPanelDecorator);
+//        convertPoint(event.getComponent(), point, mainPanelDecorator);
 
         eventPoint.x = point.x;
         eventPoint.y = point.y;
@@ -347,7 +342,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
             if (section == null)
                 continue;
 
-            convertRect(section.getParent(), section.getBounds(bounds), mainPanelDecorator, this.point);
+//            convertRect(section.getParent(), section.getBounds(bounds), mainPanelDecorator, this.point);
 
             if (bounds.contains(point))
                 return section;
@@ -366,7 +361,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
      */
     @NotNull
     private S getByMouseSection(Point point) {
-        convertRect(underMouseSection.getParent(), underMouseSection.getBounds(bounds), mainPanelDecorator, this.point);
+//        convertRect(underMouseSection.getParent(), underMouseSection.getBounds(bounds), mainPanelDecorator, this.point);
 
         if (dropBlock && bounds.contains(point))
             dropBlock = false;
@@ -381,7 +376,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
             if (section == null)
                 continue;
 
-            convertRect(section.getParent(), section.getBounds(bounds), mainPanelDecorator, this.point);
+//            convertRect(section.getParent(), section.getBounds(bounds), mainPanelDecorator, this.point);
 
             if (bounds.contains(point))
                 return section;
@@ -414,7 +409,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
             underMouseSection.setBackground(SELECTION_COLOR);
             dragImage = createImage(underMouseSection, ALPHA_HALF);
 
-            convertRect(underMouseSection.getParent(), underMouseSection.getBounds(bounds), mainPanelDecorator, point);
+//            convertRect(underMouseSection.getParent(), underMouseSection.getBounds(bounds), mainPanelDecorator, point);
 
             delta.x = eventPoint.x - bounds.x;
             delta.y = eventPoint.y - bounds.y;
@@ -431,17 +426,19 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 
     public void clear() {
         sections.clear();
-        mainPanel.removeAll();
+        panel.removeAll();
     }
 
     // ========== Poolable ==========
 
+    @Override
     public void activate() {
         clear();
         active = true;
         updateListener();
     }
 
+    @Override
     public void passivate() {
         active = false;
         updateListener();
@@ -461,6 +458,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 
     // ========== AWTEventListener ==========
 
+    @Override
     public void eventDispatched(AWTEvent event) {
         if (!isEventEnabled(event))
             return;
@@ -501,9 +499,9 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
         if (pos != this.pos && pos >= 0 && !dropBlock) {
             this.pos = pos;
             sections.move(pos, underMouseSection);
-            mainPanel.removeAll();
-            mainPanel.setComp(sections.getSections());
-            mainPanel.addComp(mainPanel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
+            panel.removeAll();
+            panel.setComp(sections.getSections());
+            panel.addComp(panel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
             dropBlock = true;
         }
 
@@ -511,7 +509,18 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
         repaint();
     }
 
+    // ========== JComponent ==========
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+
+        if (panel != null)
+            panel.updateUI();
+    }
+
     // ========== Component ==========
+
 
     @Override
     public void setVisible(boolean visible) {
@@ -527,8 +536,11 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
     public void setBackground(Color color) {
         super.setBackground(color);
 
-        for (Component component : getComponents())
-            component.setBackground(color);
+        if (panel != null)
+            panel.setBackground(color);
+
+//        for (Component component : getComponents())
+//            component.setBackground(color);
     }
 
     @Override
@@ -597,17 +609,5 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
         component.paintAll(g);
 
         return image;
-    }
-
-    private static LayoutOrganizerPanel createMainPart(int space) {
-        LayoutOrganizerPanel panel = new LayoutOrganizerPanel(new SingleColumnLayout());
-
-        // There's a moment that different section can be with fixed width (can't be place more height if needed) and
-        // not fixed (e.g. text field can take maximum available width with and as much height as needed).
-        // To block horizontal scrollbar (and sections will be risized in height) we set some value in preffered size.
-        // To make sections take more withd with horizontal scrollbal, if needed, then this value should be set to null.
-        panel.setPreferredWidth(space);
-        panel.setBackground(Color.magenta);
-        return panel;
     }
 }

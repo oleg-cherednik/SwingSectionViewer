@@ -14,18 +14,18 @@ import java.awt.Dimension;
  */
 class LocalSection extends Section<LocalSection.MainPart> {
     private final int id;
-    private final MainPart mainPart;
+    private final MainPart delegate;
 
     public LocalSection(int id) {
         this.id = id;
-        mainPart = new MainPart(id);
+        delegate = new MainPart(id);
     }
 
     // ========== Section ==========
 
     @Override
-    public MainPart getMainPart() {
-        return mainPart;
+    public MainPart getDelegate() {
+        return delegate;
     }
 
     // ========== Object ==========
