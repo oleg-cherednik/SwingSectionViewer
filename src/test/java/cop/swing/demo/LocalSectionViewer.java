@@ -8,7 +8,7 @@ import cop.swing.controls.sections.SectionViewer;
  * @author Oleg Cherednik
  * @since 18.07.2015
  */
-class LocalSectionViewer extends SectionViewer<LocalSection.MainPart, LocalSection> {
+class LocalSectionViewer extends SectionViewer<LocalSection> {
     protected LocalSectionViewer() {
         super(UNLIMITED);
         createMainLayout();

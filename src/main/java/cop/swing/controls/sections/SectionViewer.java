@@ -48,7 +48,7 @@ import static javax.swing.SwingUtilities.isLeftMouseButton;
  * @author Oleg Cherednik
  * @since 18.07.2015
  */
-public abstract class SectionViewer<T extends Component, S extends Section<T>> extends JScrollPane implements AWTEventListener {
+public abstract class SectionViewer<S extends Section> extends JScrollPane implements AWTEventListener {
     protected static final long EVENT_MASK = MOUSE_MOTION_EVENT_MASK | MOUSE_EVENT_MASK | KEY_EVENT_MASK;
     private static final Composite ALPHA_HALF = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
 
@@ -57,8 +57,35 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 
     public final Border selectedBorder = BorderFactory.createLineBorder(SELECTION_COLOR, 4);
 
-    protected final SectionContainer<T, S> sections;
-    protected final LayoutOrganizerPanel panel = new LayoutOrganizerPanel();
+    protected final SectionContainer<S> sections;
+    protected final LayoutOrganizerPanel panel = new LayoutOrganizerPanel() {
+        @Override
+        public Component findComponentAt(int x, int y) {
+            return findCompAt(x, y, true);
+        }
+
+        private Component findCompAt(int x, int y, boolean ignoreEnabled) {
+            synchronized (getTreeLock()) {
+                if (isVisible())
+                    return findCompAtImpl(x, y, ignoreEnabled);
+            }
+            return null;
+        }
+
+        private Component findCompAtImpl(int x, int y, boolean ignoreEnabled) {
+            if (!Thread.holdsLock(getTreeLock()))
+                throw new IllegalStateException("This function should be called while holding treeLock");
+
+            if (!(contains(x, y) && isVisible() && (ignoreEnabled || isEnabled())))
+                return null;
+
+            for (Component comp : getComponents())
+                if (comp != null && comp.contains(x - comp.getX(), y - comp.getY()))
+                    return comp;
+
+            return this;
+        }
+    };
 
     private final Point point = new Point();
     private final Rectangle bounds = new Rectangle();
@@ -69,14 +96,14 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
     private int pos = -1;
     private boolean draggable;
     private S prvSelectedSection;
-    private S underMouseSection;
+    private S sectionUnderMouse;
     private boolean dropBlock;    // temporary block section drop to next position to exclude visual gliches
     private boolean dragModeOn;    // true means that drag mode is currently turned on
     private Image dragImage;    // this image is shown under cursor in drag mode
 
     protected SectionViewer(int maxSections) {
         setViewportView(panel);
-        sections = new SectionContainer<T, S>(this, maxSections);
+        sections = new SectionContainer<S>(this, maxSections);
         sectionBackgroundProvider = getSectionBackgroundProvider();
     }
 
@@ -131,7 +158,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
     }
 
     public final int getFirstVisibleSection() {
-        return sections.getSectionPosition(sections.getVisibleSections().get(0));
+        return sections.getSectionPosition(sections.getSections().get(0));
     }
 
     public final void setSectionsBackground(Color color) {
@@ -149,12 +176,12 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 //        return scrollPane;
 //    }
 
-    public void addSection(S section) {
+    public void addSection(final S section) {
         if (section == null)
             return;
 
         sections.add(section);
-        panel.addComp(section.getDelegate());
+        panel.addComp(section);
         update();
 
     }
@@ -191,13 +218,13 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 //        update();
 //    }
 
-    public final Color getSectionBackground(S section) {
+    public final Color getSectionBackground(Section section) {
         int pos = getSectionPosition(section);
         int total = panel.getComponentCount();
         return sectionBackgroundProvider.getBackground(pos, total);
     }
 
-    public int getSectionPosition(S section) {
+    public int getSectionPosition(Section section) {
         int total = panel.getComponentCount();
 
         if (total == 0 || section == null)
@@ -222,7 +249,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
     }
 
     public void update() {
-        for (Section<T> section : sections.getSections())
+        for (Section section : sections.getSections())
             section.update();
 
         revalidate();
@@ -285,13 +312,13 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 
     protected void selectUnderMouseSection(boolean ctrl) {
         if (ctrl) {
-            if (underMouseSection == prvSelectedSection)
+            if (sectionUnderMouse == prvSelectedSection)
                 return;
             if (prvSelectedSection != null)
                 prvSelectedSection.setSelected(false);
-            if (underMouseSection != null)
-                underMouseSection.setSelected(true);
-            prvSelectedSection = underMouseSection;
+            if (sectionUnderMouse != null)
+                sectionUnderMouse.setSelected(true);
+            prvSelectedSection = sectionUnderMouse;
         } else {
             if (prvSelectedSection != null)
                 prvSelectedSection.setSelected(false);
@@ -299,21 +326,18 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
         }
     }
 
-    private S getUnderMouseSection(Point point) {
-        if (underMouseSection != null && underMouseSection.getBounds(bounds).isEmpty())
-            return underMouseSection;
+    /**
+     * Locates the visible section that contains the specified position.
+     *
+     * @param point position
+     * @return {@link Section} object or {@code null}
+     */
+    private S getSectionAt(Point point) {
+        if (sectionUnderMouse != null && sectionUnderMouse.getBounds(bounds).isEmpty())
+            return sectionUnderMouse;
 
-        for (S section : sections.getVisibleSections()) {
-            if (section == null)
-                continue;
-
-//            convertRect(section.getParent(), section.getBounds(bounds), mainPanelDecorator, this.point);
-
-            if (bounds.contains(point))
-                return section;
-        }
-
-        return null;
+        Component comp = panel.findComponentAt(point.x, point.y);
+        return comp instanceof Section ? (S)comp : null;
     }
 
     /**
@@ -326,7 +350,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
      */
     @NotNull
     private S getByMouseSection(Point point) {
-//        convertRect(underMouseSection.getParent(), underMouseSection.getBounds(bounds), mainPanelDecorator, this.point);
+//        convertRect(sectionUnderMouse.getParent(), sectionUnderMouse.getBounds(bounds), mainPanelDecorator, this.point);
 
         if (dropBlock && bounds.contains(point))
             dropBlock = false;
@@ -335,9 +359,9 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
         int dy;
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
-        S sec = underMouseSection;
+        S sec = sectionUnderMouse;
 
-        for (S section : sections.getVisibleSections()) {
+        for (S section : sections.getSections()) {
             if (section == null)
                 continue;
 
@@ -371,15 +395,15 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
             return;
 
         if (on) {
-            underMouseSection.setBackground(SELECTION_COLOR);
-            dragImage = createImage(underMouseSection, ALPHA_HALF);
+            sectionUnderMouse.setBackground(SELECTION_COLOR);
+            dragImage = createImage(sectionUnderMouse, ALPHA_HALF);
 
-//            convertRect(underMouseSection.getParent(), underMouseSection.getBounds(bounds), mainPanelDecorator, point);
+//            convertRect(sectionUnderMouse.getParent(), sectionUnderMouse.getBounds(bounds), mainPanelDecorator, point);
 
             delta.x = eventPoint.x - bounds.x;
             delta.y = eventPoint.y - bounds.y;
 
-            pos = getSectionPosition(underMouseSection);
+            pos = getSectionPosition(sectionUnderMouse);
         } else
             dragImage = null;
 
@@ -409,7 +433,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
     // ========== MouseListener ==========
 
     protected void mousePressed(MouseEvent event) {
-        if (underMouseSection == null || prvSelectedSection == null)
+        if (sectionUnderMouse == null || prvSelectedSection == null)
             return;
         if (!event.isControlDown() || !isLeftMouseButton(event))
             return;
@@ -423,7 +447,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
     // ========== MouseMotionListener ==========
 
     protected void mouseMoved(MouseEvent event) {
-        underMouseSection = getUnderMouseSection(eventPoint);
+        sectionUnderMouse = getSectionAt(eventPoint);
         selectUnderMouseSection(event.isControlDown());
     }
 
@@ -436,7 +460,7 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
 
         if (pos != this.pos && pos >= 0 && !dropBlock) {
             this.pos = pos;
-            sections.move(pos, underMouseSection);
+            sections.move(pos, sectionUnderMouse);
             panel.removeAll();
             panel.setComp(sections.getSections());
             panel.addComp(panel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
@@ -496,8 +520,8 @@ public abstract class SectionViewer<T extends Component, S extends Section<T>> e
         else {
             Color color = g.getColor();
             g.setColor(Color.green);
-            int width = underMouseSection.getWidth();
-            int height = underMouseSection.getHeight();
+            int width = sectionUnderMouse.getWidth();
+            int height = sectionUnderMouse.getHeight();
             g.fillRect(x, y, width, height);
             g.setColor(color);
         }

@@ -21,7 +21,7 @@ import java.awt.geom.Rectangle2D;
  * @author Oleg Cherednik
  * @since 18.07.2015
  */
-public abstract class Section<T extends Component> extends JPanel {
+public abstract class Section extends JPanel {
     private static final Composite ALPHA = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1);
 
     private final Rectangle2D.Double rect = new Rectangle2D.Double();
@@ -31,17 +31,17 @@ public abstract class Section<T extends Component> extends JPanel {
     private Dimension dim = getPreferredSize();
     private Image image;
 
-    protected SectionViewer<T, Section<T>> viewer;
+    protected SectionViewer<? extends Section> viewer;
 
     protected Section() {
         border = getBorder();
     }
 
-    public final void setViewer(SectionViewer<T, Section<T>> viewer) {
+    public final void setViewer(SectionViewer<? extends Section> viewer) {
         this.viewer = viewer;
     }
 
-    public final SectionViewer<T, Section<T>> getViewer() {
+    public final SectionViewer<? extends Section> getViewer() {
         return viewer;
     }
 
@@ -49,7 +49,7 @@ public abstract class Section<T extends Component> extends JPanel {
         if (viewer == null)
             return;
 
-        setBackground(viewer.getSectionBackground(this));
+//        setBackground(viewer.getSectionBackground(this));
         revalidate();
     }
 
@@ -64,10 +64,6 @@ public abstract class Section<T extends Component> extends JPanel {
         for (Component component : getComponents())
             component.setVisible(!selected);
     }
-
-    // ========== abstract ==========
-
-    public abstract T getDelegate();
 
     // ========== Component ==========
 
