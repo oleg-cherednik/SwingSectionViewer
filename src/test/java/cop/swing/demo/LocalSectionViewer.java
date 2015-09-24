@@ -10,8 +10,6 @@ import cop.swing.controls.sections.SectionViewer;
  */
 class LocalSectionViewer extends SectionViewer<LocalSection> {
     protected LocalSectionViewer() {
-        super(UNLIMITED);
-        createMainLayout();
         setDraggable(true);
     }
 

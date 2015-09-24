@@ -20,18 +20,14 @@ import java.util.List;
  * @since 18.07.2015
  */
 final class SectionContainer<S extends Section> implements ComponentListener, ChangeListener {
-    public static final int UNLIMITED = 0;
-
     private final Rectangle cmpBounds = new Rectangle();
     private final Rectangle bounds = new Rectangle();
     private final Point point = new Point();
 
     private final List<S> sections = new ArrayList<S>();
     private final SectionViewer<S> viewer;
-    private final int maxSections;
 
-    public SectionContainer(SectionViewer<S> viewer, int maxSections) {
-        this.maxSections = maxSections > UNLIMITED ? maxSections : Integer.MAX_VALUE;
+    public SectionContainer(SectionViewer<S> viewer) {
         this.viewer = viewer;
     }
 
@@ -56,33 +52,23 @@ final class SectionContainer<S extends Section> implements ComponentListener, Ch
         try {
             sections.remove(section);
             sections.add(index, section);
-            section.setViewer((SectionViewer<Section>)this.viewer);
+            section.setViewer(this.viewer);
         } catch(Exception ignored) {
             section.setViewer(viewer);
         }
     }
 
-    public int getMaxSections() {
-        return maxSections;
-    }
-
     public void add(S section) {
-        if (sections.size() >= maxSections)
-            return;
-
-        section.setViewer((SectionViewer<S>)viewer);
+        section.setViewer(viewer);
         sections.add(section);
     }
 
     public void add(int index, S section) {
-        if (sections.size() >= maxSections)
-            return;
-
         SectionViewer<? extends Section> viewer = section.getViewer();
 
         try {
             sections.add(index, section);
-            section.setViewer((SectionViewer<S>)this.viewer);
+            section.setViewer(this.viewer);
         } catch(Exception ignored) {
             section.setViewer(viewer);
         }
@@ -100,10 +86,6 @@ final class SectionContainer<S extends Section> implements ComponentListener, Ch
 
     public boolean isEmpty() {
         return sections.isEmpty();
-    }
-
-    public boolean isFull() {
-        return sections.size() >= maxSections;
     }
 
     public boolean remove(S section) {

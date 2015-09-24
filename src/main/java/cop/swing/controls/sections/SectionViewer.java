@@ -39,9 +39,6 @@ import static javax.swing.SwingUtilities.isDescendingFrom;
 import static javax.swing.SwingUtilities.isLeftMouseButton;
 
 /**
- * Pay attention! Main layout is not created automatically invoking {@link #createMainLayout()} method in constructor.
- * It may flow uninitialized errors in children. So this method must be invoked in concrete instance.
- * <p/>
  * This viewer can contains lots of sections, that can be quite complicated in general. In this situation we have
  * performance problem with GUI.
  *
@@ -53,39 +50,11 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     private static final Composite ALPHA_HALF = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
 
     public static final Color SELECTION_COLOR = Color.orange;
-    public static final int UNLIMITED = SectionContainer.UNLIMITED;
 
     public final Border selectedBorder = BorderFactory.createLineBorder(SELECTION_COLOR, 4);
 
     protected final SectionContainer<S> sections;
-    protected final LayoutOrganizerPanel panel = new LayoutOrganizerPanel() {
-        @Override
-        public Component findComponentAt(int x, int y) {
-            return findCompAt(x, y, true);
-        }
-
-        private Component findCompAt(int x, int y, boolean ignoreEnabled) {
-            synchronized (getTreeLock()) {
-                if (isVisible())
-                    return findCompAtImpl(x, y, ignoreEnabled);
-            }
-            return null;
-        }
-
-        private Component findCompAtImpl(int x, int y, boolean ignoreEnabled) {
-            if (!Thread.holdsLock(getTreeLock()))
-                throw new IllegalStateException("This function should be called while holding treeLock");
-
-            if (!(contains(x, y) && isVisible() && (ignoreEnabled || isEnabled())))
-                return null;
-
-            for (Component comp : getComponents())
-                if (comp != null && comp.contains(x - comp.getX(), y - comp.getY()))
-                    return comp;
-
-            return this;
-        }
-    };
+    protected final LayoutOrganizerPanel panel = new LayoutOrganizerPanel();
 
     private final Point point = new Point();
     private final Rectangle bounds = new Rectangle();
@@ -101,9 +70,9 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     private boolean dragModeOn;    // true means that drag mode is currently turned on
     private Image dragImage;    // this image is shown under cursor in drag mode
 
-    protected SectionViewer(int maxSections) {
+    protected SectionViewer() {
         setViewportView(panel);
-        sections = new SectionContainer<S>(this, maxSections);
+        sections = new SectionContainer<S>(this);
         sectionBackgroundProvider = getSectionBackgroundProvider();
     }
 
@@ -122,7 +91,6 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
 
     private void updateListener() {
         getToolkit().removeAWTEventListener(this);
-//        mainPanelDecorator.removeComponentListener(sections);
 //        scrollPane.getViewport().removeChangeListener(sections);
 
 //        mainPanelDecorator.addComponentListener(sections);
@@ -131,10 +99,6 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
             getToolkit().addAWTEventListener(this, EVENT_MASK);
 
 //        scrollPane.getViewport().addChangeListener(sections);
-    }
-
-    protected int getMaxSections() {
-        return sections.getMaxSections();
     }
 
     boolean isDragModeOn() {
@@ -149,11 +113,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
         return sections.isEmpty();
     }
 
-    public final boolean isFull() {
-        return sections.isFull();
-    }
-
-    public final int getTotalSections() {
+    public final int getSectionsAmount() {
         return sections.size();
     }
 
@@ -164,17 +124,6 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     public final void setSectionsBackground(Color color) {
         sections.setBackground(color);
     }
-
-    protected void createMainLayout() {
-//        setLayout(new BorderLayout());
-//        add(mainPanelDecorator = panel, BorderLayout.CENTER);
-    }
-
-//    protected Component modify(Component view) {
-//        scrollPane.setViewportView(view);
-//        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-//        return scrollPane;
-//    }
 
     public void addSection(final S section) {
         if (section == null)
@@ -197,26 +146,6 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
 
         update();
     }
-
-//    public void addNewSectionAfter(S section) {
-//        if (sections.isFull())
-//            return;
-//
-//        int pos = getSectionPosition(section);
-//        section = acquireSection();
-//
-//        sections.add(pos + 1, section);
-//
-//        Collection<Component> components = new ArrayList<>(sections.size() + 1);
-//
-//        for (Section<T> sec : sections.getSections())
-//            components.add(sec);
-//
-//        components.add(panel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
-//
-//        panel.setComp(components);
-//        update();
-//    }
 
     public final Color getSectionBackground(Section section) {
         int pos = getSectionPosition(section);

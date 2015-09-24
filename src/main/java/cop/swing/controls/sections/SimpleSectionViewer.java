@@ -7,7 +7,6 @@ package cop.swing.controls.sections;
  * @since 18.07.2015
  */
 public abstract class SimpleSectionViewer<S extends Section> extends SectionViewer<S> {
-    protected SimpleSectionViewer(int maxSections) {
-        super(maxSections);
+    protected SimpleSectionViewer() {
     }
 }
