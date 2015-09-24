@@ -27,7 +27,6 @@ class LocalSectionViewer extends SectionViewer<LocalSection> {
             ((SingleColumnLayout)panel.getLayoutOrganizer()).setAlignment(alignment);
         else if (panel.getLayoutOrganizer() instanceof SingleRowLayout)
             ((SingleRowLayout)panel.getLayoutOrganizer()).setAlignment(alignment);
-
         updateUI();
     }
 }

@@ -3,20 +3,61 @@ package cop.swing.demo;
 import cop.swing.controls.sections.Section;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import java.awt.BorderLayout;
+import javax.swing.SwingConstants;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 
 /**
  * @author Oleg Cherednik
  * @since 18.07.2015
  */
 class LocalSection extends Section {
-    private final int id;
+    private int id;
+    private final JLabel labelId;
 
     public LocalSection(int id) {
         this.id = id;
-        setLayout(new BorderLayout(0, 0));
-        add(new JLabel("Section: " + id), BorderLayout.CENTER);
+        labelId = new JLabel(String.format("<html><font color=\"red\">%d</font></html>", id));
+        init();
+    }
+
+    private void init() {
+        JLabel title = new JLabel(String.format("<html>Rule for section %d</b></html>", id));
+        JLabel price = new JLabel(String.format("<html><font color=\"blue\">price:</font> $%d</html>", id));
+        JCheckBox active = new JCheckBox();
+
+        active.setSelected(id % 2 != 0);
+        active.setEnabled(false);
+
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        labelId.setPreferredSize(new Dimension(30, 0));
+        labelId.setHorizontalAlignment(SwingConstants.CENTER);
+
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridheight = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        add(labelId, gbc);
+
+        gbc.gridheight = 1;
+        add(title, gbc);
+
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.weightx = 1;
+        add(Box.createHorizontalGlue(), gbc);
+
+        gbc.weightx = 0;
+        gbc.gridwidth = 1;
+        add(price, gbc);
+        add(new JLabel("<html><font color=\"blue\">active:</font></html>"), gbc);
+        add(active, gbc);
+
+
         setBorder(BorderFactory.createEtchedBorder());
     }
 
