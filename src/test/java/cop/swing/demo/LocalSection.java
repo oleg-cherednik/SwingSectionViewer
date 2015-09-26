@@ -2,7 +2,6 @@ package cop.swing.demo;
 
 import cop.swing.controls.sections.Section;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -31,7 +30,7 @@ class LocalSection extends Section {
         JCheckBox active = new JCheckBox();
 
         active.setSelected(id % 2 != 0);
-        active.setEnabled(false);
+//        active.setEnabled(false);
 
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -57,8 +56,8 @@ class LocalSection extends Section {
         add(new JLabel("<html><font color=\"blue\">active:</font></html>"), gbc);
         add(active, gbc);
 
-
-        setBorder(BorderFactory.createEtchedBorder());
+//        BorderFactory.createLineBorder(SELECTION_COLOR, 4)
+//        setBorder(BorderFactory.createLineBorder(Color.red, 4));//createEmptyBorder(4, 4, 4, 4));
     }
 
     // ========== Object ==========

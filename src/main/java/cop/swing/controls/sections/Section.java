@@ -49,7 +49,7 @@ public abstract class Section extends JPanel {
         if (viewer == null)
             return;
 
-//        setBackground(viewer.getSectionBackground(this));
+        setBackground(viewer.getSectionBackground(this));
         revalidate();
     }
 
@@ -58,11 +58,11 @@ public abstract class Section extends JPanel {
             return;
 
         this.selected = selected;
-        super.setBorder(selected ? null : border);
+//        super.setBorder(selected ? null : border);
         image = selected ? SectionViewer.createImage(this, ALPHA) : null;
 
-        for (Component component : getComponents())
-            component.setVisible(!selected);
+//        for (Component component : getComponents())
+//            component.setVisible(!selected);
     }
 
     // ========== Component ==========
@@ -86,6 +86,7 @@ public abstract class Section extends JPanel {
             return;
 
         super.paint(g);
+//        setBackground(selected ? Color.magenta : Color.gray);
 
         if (!selected)
             return;
@@ -101,10 +102,11 @@ public abstract class Section extends JPanel {
             g.fillRect(0, 0, (int)rect.width, (int)rect.height);
             g.setColor(SectionViewer.SELECTION_COLOR);
             ((Graphics2D)g).draw(rect);
-        } else if (image != null)
-            g.drawImage(image, 0, 0, null);
+        }
+//        else if (image != null)
+//            g.drawImage(image, 0, 0, null);
 
-        viewer.selectedBorder.paintBorder(this, g, 0, 0, (int)rect.width, (int)rect.height);
+//        viewer.selectedBorder.paintBorder(this, g, 0, 0, (int)rect.width, (int)rect.height);
     }
 
     // ========== JComponent ==========

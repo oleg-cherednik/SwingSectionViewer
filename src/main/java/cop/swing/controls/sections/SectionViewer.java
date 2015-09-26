@@ -125,7 +125,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
         sections.setBackground(color);
     }
 
-    public void addSection(final S section) {
+    public void addSection(S section) {
         if (section == null)
             return;
 
@@ -178,8 +178,9 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     }
 
     public void update() {
-        for (Section section : sections.getSections())
-            section.update();
+        if (sections != null)
+            for (Section section : sections.getSections())
+                section.update();
 
         revalidate();
         repaint();
@@ -429,6 +430,9 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
 
         if (panel != null)
             panel.setBackground(color);
+
+        update();
+        repaint();
 
 //        for (Component component : getComponents())
 //            component.setBackground(color);

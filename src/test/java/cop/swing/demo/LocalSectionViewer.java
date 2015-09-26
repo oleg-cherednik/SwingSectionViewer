@@ -3,6 +3,10 @@ package cop.swing.demo;
 import cop.swing.controls.layouts.SingleColumnLayout;
 import cop.swing.controls.layouts.SingleRowLayout;
 import cop.swing.controls.sections.SectionViewer;
+import cop.swing.providers.BackgroundProvider;
+import cop.swing.providers.GroupBackgroundProvider;
+
+import java.awt.Color;
 
 /**
  * @author Oleg Cherednik
@@ -28,5 +32,12 @@ class LocalSectionViewer extends SectionViewer<LocalSection> {
         else if (panel.getLayoutOrganizer() instanceof SingleRowLayout)
             ((SingleRowLayout)panel.getLayoutOrganizer()).setAlignment(alignment);
         updateUI();
+    }
+
+    // ========== SectionViewer ==========
+
+    @Override
+    protected BackgroundProvider getSectionBackgroundProvider() {
+        return new GroupBackgroundProvider(Color.lightGray, Color.gray);
     }
 }
