@@ -3,8 +3,8 @@ package cop.swing.controls.sections;
 import cop.swing.controls.layouts.LayoutNode;
 import cop.swing.controls.layouts.LayoutOrganizer;
 import cop.swing.panels.LayoutOrganizerPanel;
-import cop.swing.providers.BackgroundProvider;
-import cop.swing.providers.ParentBackgroundProvider;
+import cop.swing.providers.ColorProvider;
+import cop.swing.providers.ParentColorProvider;
 import org.apache.commons.collections.CollectionUtils;
 
 import javax.swing.BorderFactory;
@@ -60,7 +60,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     private final Rectangle bounds = new Rectangle();
     private final Point delta = new Point();    // delta between draggable region start and mouse position
     private final Point eventPoint = new Point();    // event or mouse point in drag mode (this is base point)
-    private final BackgroundProvider sectionBackgroundProvider;
+    private final ColorProvider sectionBackgroundColorProvider;
 
     private int pos = -1;
     private boolean draggable;
@@ -73,15 +73,15 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     protected SectionViewer() {
         setViewportView(panel);
         sections = new SectionContainer<S>(this);
-        sectionBackgroundProvider = getSectionBackgroundProvider();
+        sectionBackgroundColorProvider = getBackgroundColorProvider();
     }
 
     public final LayoutOrganizer getLayoutOrganizer() {
         return panel.getLayoutOrganizer();
     }
 
-    protected BackgroundProvider getSectionBackgroundProvider() {
-        return new ParentBackgroundProvider(this);
+    protected ColorProvider getBackgroundColorProvider() {
+        return new ParentColorProvider(this);
     }
 
     public void setDraggable(boolean draggable) {
@@ -150,7 +150,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     public final Color getSectionBackground(Section section) {
         int pos = getSectionPosition(section);
         int total = panel.getComponentCount();
-        return sectionBackgroundProvider.getBackground(pos, total);
+        return sectionBackgroundColorProvider.getBackground(pos, total);
     }
 
     public int getSectionPosition(Section section) {
@@ -433,7 +433,6 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
 
         update();
         repaint();
-
 //        for (Component component : getComponents())
 //            component.setBackground(color);
     }

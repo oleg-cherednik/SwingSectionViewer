@@ -8,10 +8,10 @@ import java.awt.Color;
  * @author Oleg Cherednik
  * @since 26.09.2015
  */
-public class GroupBackgroundProvider implements BackgroundProvider {
+public class GroupColorProvider implements ColorProvider {
     private final Color[] colors;
 
-    public GroupBackgroundProvider(Color... colors) {
+    public GroupColorProvider(Color... colors) {
         if (ArrayUtils.isEmpty(colors))
             throw new IllegalArgumentException("colors is empty");
 

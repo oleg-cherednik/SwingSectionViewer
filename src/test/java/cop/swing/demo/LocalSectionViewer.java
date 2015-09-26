@@ -3,8 +3,8 @@ package cop.swing.demo;
 import cop.swing.controls.layouts.SingleColumnLayout;
 import cop.swing.controls.layouts.SingleRowLayout;
 import cop.swing.controls.sections.SectionViewer;
-import cop.swing.providers.BackgroundProvider;
-import cop.swing.providers.GroupBackgroundProvider;
+import cop.swing.providers.ColorProvider;
+import cop.swing.providers.GroupColorProvider;
 
 import java.awt.Color;
 
@@ -37,7 +37,7 @@ class LocalSectionViewer extends SectionViewer<LocalSection> {
     // ========== SectionViewer ==========
 
     @Override
-    protected BackgroundProvider getSectionBackgroundProvider() {
-        return new GroupBackgroundProvider(Color.lightGray, Color.gray);
+    protected ColorProvider getBackgroundColorProvider() {
+        return new GroupColorProvider(Color.lightGray, Color.gray);
     }
 }

@@ -9,10 +9,10 @@ import java.awt.Component;
  * @author Oleg Cherednik
  * @since 18.07.2015
  */
-public class ParentBackgroundProvider implements BackgroundProvider {
+public class ParentColorProvider implements ColorProvider {
     private final Component component;
 
-    public ParentBackgroundProvider(Component component) {
+    public ParentColorProvider(Component component) {
         this.component = component;
     }
 

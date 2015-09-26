@@ -6,6 +6,6 @@ import java.awt.Color;
  * @author Oleg Cherednik
  * @since 18.07.2015
  */
-public interface BackgroundProvider {
+public interface ColorProvider {
     Color getBackground(int pos, int total);
 }
