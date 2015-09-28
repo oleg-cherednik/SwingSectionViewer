@@ -80,6 +80,15 @@ final class SectionContainer<S extends Section> implements ComponentListener, Ch
                 add(section);
     }
 
+    public boolean contains(Section section) {
+        if (section != null)
+            for (Section sec : sections)
+                if (sec == section)
+                    return true;
+
+        return false;
+    }
+
     public S get(int index) {
         return sections.size() > index ? sections.get(index) : null;
     }

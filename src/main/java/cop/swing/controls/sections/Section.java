@@ -61,8 +61,8 @@ public abstract class Section extends JPanel {
 //        super.setBorder(selected ? null : border);
         image = selected ? SectionViewer.createImage(this, ALPHA) : null;
 
-//        for (Component component : getComponents())
-//            component.setVisible(!selected);
+        for (Component component : getComponents())
+            component.setVisible(!selected);
     }
 
     // ========== Component ==========
@@ -86,34 +86,25 @@ public abstract class Section extends JPanel {
             return;
 
         super.paint(g);
-//        setBackground(selected ? Color.magenta : Color.gray);
+
 
         if (!selected)
             return;
 
-        rect.width = getWidth() - 1;
-        rect.height = getHeight() - 1;
+        rect.width = getWidth();
+        rect.height = getHeight();
 
         if (viewer.isDragModeOn()) {
-            rect.width = getWidth() - 1;
-            rect.height = getHeight() - 1;
+            rect.width = getWidth();
+            rect.height = getHeight();
 
             g.setColor(getBackground());
             g.fillRect(0, 0, (int)rect.width, (int)rect.height);
             g.setColor(SectionViewer.SELECTION_COLOR);
             ((Graphics2D)g).draw(rect);
-        }
-//        else if (image != null)
-//            g.drawImage(image, 0, 0, null);
+        } else if (image != null)
+            g.drawImage(image, 0, 0, null);
 
-//        viewer.selectedBorder.paintBorder(this, g, 0, 0, (int)rect.width, (int)rect.height);
-    }
-
-    // ========== JComponent ==========
-
-    @Override
-    public void setBorder(Border border) {
-        super.setBorder(border);
-        this.border = border;
+        viewer.selectedBorder.paintBorder(this, g, 0, 0, (int)rect.width, (int)rect.height);
     }
 }

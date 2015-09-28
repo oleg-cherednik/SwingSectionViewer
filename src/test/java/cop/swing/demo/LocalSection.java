@@ -57,7 +57,7 @@ class LocalSection extends Section {
         add(active, gbc);
 
 //        BorderFactory.createLineBorder(SELECTION_COLOR, 4)
-//        setBorder(BorderFactory.createLineBorder(Color.red, 4));//createEmptyBorder(4, 4, 4, 4));
+//        setBorder(BorderFactory.createLineBorder(Color.red, 2));//createEmptyBorder(4, 4, 4, 4));
     }
 
     // ========== Object ==========

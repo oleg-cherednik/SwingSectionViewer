@@ -42,7 +42,7 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
         add(sectionViewer, BorderLayout.CENTER);
 
         sectionViewer.setBorder(BorderFactory.createEtchedBorder());
-        sectionViewer.setBackground(Color.gray);
+        sectionViewer.setBackground(Color.pink);
 
         setSize(800, 500);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
