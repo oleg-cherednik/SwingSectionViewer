@@ -274,29 +274,8 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
         if (selectedSection != null && selectedSection.getBounds(bounds).isEmpty())
             return selectedSection;
 
-
-        Component comp = _findCompAtImpl(point.x, point.y, true);
-//        Component comp = panel.findComponentAt(point.x, point.y);
-
-//        if (comp instanceof Section)
-//            System.out.println("---: " + comp + " - " + (comp instanceof Section));
+        Component comp = panel.findComponentAt(point.x, point.y);
         return comp instanceof Section ? (S)comp : null;
-    }
-
-    private Component _findCompAtImpl(int x, int y, boolean ignoreEnabled) {
-        if (!(panel.contains(x, y) && panel.isVisible() && (ignoreEnabled || panel.isEnabled())))
-            return null;
-
-//        System.out.println("x=" + x + ", y=" + y);
-        for (Component comp : panel.getComponents()) {
-            if (comp instanceof Section)
-//                System.out.println(comp + ": x=" + comp.getX() + ", y=" + comp.getY());
-
-            if (comp != null && comp.contains(x - comp.getX(), y - comp.getY()))
-                return comp;
-        }
-
-        return this;
     }
 
     /**
