@@ -59,6 +59,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     //    private final Point point = new Point();
     private final Rectangle bounds = new Rectangle();
     private final Point delta = new Point();    // delta between draggable region start and mouse position
+    // mouse point, top left panel's corner is [0;0]
     private final Point eventPoint = new Point();    // event or mouse point in drag mode (this is base point)
     private final ColorProvider sectionBackgroundColorProvider;
 
@@ -123,16 +124,6 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
 
     public final void setSectionsBackground(Color color) {
         sections.setBackground(color);
-    }
-
-    void mouseEntered(Section section) {
-//        if (!sections.contains(section))
-//            return;
-//        if (selectedSection != null && prvSelectedSection != selectedSection)
-//            prvSelectedSection = selectedSection;
-    }
-
-    void mouseExited(Section section) {
     }
 
     public void addSection(S section) {
@@ -221,15 +212,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     }
 
     protected void onMouseEvent(MouseEvent event) {
-        eventPoint.x = event.getX();
-        eventPoint.y = event.getY();
-
-        convertPoint((Component)event.getSource(), eventPoint, panel);
-
-//        if(event.getSource() != this)
-//            return;
-//
-//        System.out.println(String.format("x:%d, y:%d", x, y));
+        updateEventPoint(event);
 
         if (event.getID() == MouseEvent.MOUSE_PRESSED)
             mousePressed(event);
@@ -242,7 +225,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     }
 
     protected void onKeyEvent(KeyEvent event) {
-//        selectUnderMouseSection(event.isControlDown());
+        selectUnderMouseSection(event.isControlDown());
 
         if (!event.isControlDown())
             setDragMode(false);
@@ -280,7 +263,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
 
     /**
      * Returns section that is closest to the mouse pointer. In any case section will be returned. In limit
-     * point either first or last section will be returned. To exclude visual gliches when we drag small section
+     * point either first or last section will be returned. To exclude visual glitches when we drag small section
      * over big one, after each position switch, we block switches until dragged section reach it's new positions.
      *
      * @param point mouse pointer
@@ -288,7 +271,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
      */
     @NotNull
     private S getByMouseSection(Point point) {
-//        convertRect(selectedSection.getParent(), selectedSection.getBounds(bounds), mainPanelDecorator, this.point);
+//        convertRect(selectedSection, selectedSection.getBounds(bounds), mainPanelDecorator, this.point);
 
         if (dropBlock && bounds.contains(point))
             dropBlock = false;
@@ -373,9 +356,8 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     protected void mousePressed(MouseEvent event) {
         if (selectedSection == null || prvSelectedSection == null)
             return;
-        if (!event.isControlDown() || !isLeftMouseButton(event))
-            return;
-        setDragMode(true);
+        if (event.isControlDown() && isLeftMouseButton(event))
+            setDragMode(true);
     }
 
     protected void mouseReleased(MouseEvent event) {
@@ -385,27 +367,25 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     // ========== MouseMotionListener ==========
 
     protected void mouseMoved(MouseEvent event) {
-        S tmp = selectedSection;
         selectedSection = getSectionAt(eventPoint);
         selectUnderMouseSection(event.isControlDown());
-
-//        System.out.println("Active: " + selectedSection);
     }
 
     protected void mouseDragged(MouseEvent event) {
         if (!dragModeOn)
             return;
 
-        S section = getByMouseSection(eventPoint);
+        S section = getSectionAt(eventPoint);
+        System.out.println(section);
         int pos = getSectionPosition(section);
+        System.out.println(pos != this.pos && pos >= 0 && !dropBlock);
 
-        if (pos != this.pos && pos >= 0 && !dropBlock) {
+        if (pos != this.pos && pos >= 0) {
+            System.out.println("----------");
             this.pos = pos;
             sections.move(pos, selectedSection);
             panel.removeAll();
             panel.setComp(sections.getSections());
-            panel.addComp(panel.getLayoutOrganizer().modifyNode(LayoutNode.GLUE).create());
-            dropBlock = true;
         }
 
         update();
@@ -468,6 +448,12 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
             g.fillRect(x, y, width, height);
             g.setColor(color);
         }
+    }
+
+    private void updateEventPoint(MouseEvent event) {
+        eventPoint.x = event.getX();
+        eventPoint.y = event.getY();
+        convertPoint((Component)event.getSource(), eventPoint, panel);
     }
 
     // ========== static ==========
