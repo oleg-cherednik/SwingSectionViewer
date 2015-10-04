@@ -153,14 +153,11 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     }
 
     public void removeSection(S section) {
-        int pos = panel.getComponentPosition(section);
-
-        if (pos < 0)
-            return;
-
-        sections.remove(section);
-        panel.remove(panel.getComponent(pos));
-        update();
+        if (panel.getComponentPosition(section) >= 0) {
+            sections.remove(section);
+            panel.remove(section);
+            update();
+        }
     }
 
     public void update() {
@@ -281,6 +278,12 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
         panel.removeAll();
     }
 
+    private void updateEventPoint(MouseEvent event) {
+        eventPoint.x = event.getX();
+        eventPoint.y = event.getY();
+        convertPoint((Component)event.getSource(), eventPoint, panel);
+    }
+
     // ========== AWTEventListener ==========
 
     @Override
@@ -341,7 +344,6 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
 
     // ========== Component ==========
 
-
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
@@ -387,10 +389,13 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
         }
     }
 
-    private void updateEventPoint(MouseEvent event) {
-        eventPoint.x = event.getX();
-        eventPoint.y = event.getY();
-        convertPoint((Component)event.getSource(), eventPoint, panel);
+    // ========== Container ==========
+
+    /** Do use {@link #removeSection(Section)} instead */
+    @Override
+    @Deprecated
+    public void remove(Component comp) {
+        super.remove(comp);
     }
 
     // ========== static ==========

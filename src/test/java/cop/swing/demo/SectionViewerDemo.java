@@ -157,7 +157,12 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
 //                textField.setText("Text field with 10 columns");
 //                panel.addComp(textField);
             } else if (event.getSource() == removeLast) {
-//                panel.removeLast();
+                int total = sectionViewer.getSectionsAmount();
+
+                if (total > 0) {
+                    LocalSection section = sectionViewer.getSections().get(total - 1);
+                    sectionViewer.removeSection(section);
+                }
             } else if (event.getSource() == changeBackground) {
                 sectionViewer.setBackground(new Color(rand.nextInt(0xFFFFFF)));
             } else if (event.getSource() == columnStrategy) {
