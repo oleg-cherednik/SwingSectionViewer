@@ -53,7 +53,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     public final Border selectedBorder = BorderFactory.createLineBorder(SELECTION_COLOR, 2);
 
     protected final SectionContainer<S> sections;
-    protected final LayoutOrganizerPanel panel = new LayoutOrganizerPanel();
+    protected final LayoutOrganizerPanel panel;
 
     //    private final Point point = new Point();
     private final Rectangle bounds = new Rectangle();
@@ -70,13 +70,17 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     private Image dragImage;    // this image is shown under cursor in drag mode
 
     protected SectionViewer() {
-        setViewportView(panel);
+        this(null);
+    }
+
+    protected SectionViewer(LayoutOrganizer layoutOrganizer) {
+        setViewportView(panel = new LayoutOrganizerPanel(layoutOrganizer));
         sections = new SectionContainer<S>(this);
         sectionBackgroundColorProvider = getBackgroundColorProvider();
     }
 
-    public final LayoutOrganizer getLayoutOrganizer() {
-        return panel.getLayoutOrganizer();
+    public void setLayoutOrganizer(LayoutOrganizer layoutOrganizer) {
+        panel.setLayoutOrganizer(layoutOrganizer);
     }
 
     protected ColorProvider getBackgroundColorProvider() {
@@ -147,13 +151,13 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     }
 
     public final Color getSectionBackground(Section section) {
-        int pos = panel.getComponentPosition(section);
-        int total = panel.getComponentCount();
+        int pos = sections.getPosition(section);
+        int total = sections.size();
         return sectionBackgroundColorProvider.getBackground(pos, total);
     }
 
     public void removeSection(S section) {
-        if (panel.getComponentPosition(section) >= 0) {
+        if (sections.getPosition(section) != -1) {
             sections.remove(section);
             panel.remove(section);
             update();
@@ -206,6 +210,11 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
             mouseDragged(event);
     }
 
+//    private static MouseEvent updateEventPoint(MouseEvent event) {
+//        return new MouseEvent((Component)event.getSource(), event.getID(), event.getWhen(), event.getModifiers(), event.getX(), event.getY(),
+//                event.getClickCount(), event.isPopupTrigger(), event.getButton());
+//    }
+
     protected void onKeyEvent(KeyEvent event) {
         selectUnderMouseSection(event.isControlDown());
 
@@ -257,13 +266,9 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
         if (on) {
             selectedSection.setBackground(SELECTION_COLOR);
             dragImage = createImage(selectedSection, ALPHA_HALF);
-
-//            convertRect(selectedSection.getParent(), selectedSection.getBounds(bounds), mainPanelDecorator, point);
-
             delta.x = eventPoint.x - bounds.x;
             delta.y = eventPoint.y - bounds.y;
-
-            pos = panel.getComponentPosition(selectedSection);
+            pos = sections.getPosition(selectedSection);
         } else
             dragImage = null;
 
@@ -320,8 +325,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
         if (!dragModeOn)
             return;
 
-        S section = getSectionAt(eventPoint);
-        int pos = panel.getComponentPosition(section);
+        int pos = sections.getPosition(getSectionAt(eventPoint));
 
         if (pos != this.pos && pos >= 0) {
             sections.move(selectedSection, this.pos = pos);
@@ -330,6 +334,19 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
 
         update();
         repaint();
+    }
+
+    private int getComponentPosition(S section) {
+        int pos = -1;
+
+        for (Component component : panel.getComponents()) {
+            if (!(component instanceof Section))
+                pos++;
+            if (component == section)
+                return pos;
+        }
+
+        return -1;
     }
 
     // ========== JComponent ==========
@@ -380,6 +397,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
         if (dragImage != null)
             g.drawImage(dragImage, x, y, null);
         else {
+            // TODO it seems that it's useless, I don't see green color
             Color color = g.getColor();
             g.setColor(Color.green);
             int width = selectedSection.getWidth();

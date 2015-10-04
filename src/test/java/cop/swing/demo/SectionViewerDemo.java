@@ -1,5 +1,8 @@
 package cop.swing.demo;
 
+import cop.swing.controls.layouts.SingleColumnLayout;
+import cop.swing.controls.layouts.SingleRowLayout;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -17,6 +20,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -36,6 +40,7 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
     }
 
     private void init() {
+        sectionViewer.setLayoutOrganizer(SettingsPanel.SINGLE_COLUMN);
         setLayout(new BorderLayout(5, 5));
 
         add(settingsPanel, BorderLayout.EAST);
@@ -69,6 +74,8 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
 
     static class SettingsPanel extends JPanel implements ActionListener, ChangeListener {
         private static final long serialVersionUID = -7738468553704362158L;
+        private static final SingleColumnLayout SINGLE_COLUMN = new SingleColumnLayout();
+        private static final SingleRowLayout SINGLE_ROW = new SingleRowLayout();
 
         private int id = 1;
 
@@ -151,6 +158,9 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
             } else if (event.getSource() == addGlue) {
 //                panel.addComp(panel.getLayoutOrganizer() == SINGLE_COLUMN ? Box.createVerticalGlue() : Box.createHorizontalGlue());
             } else if (event.getSource() == addTextField0) {
+                for(Component component : sectionViewer.getSections())
+                    System.out.println(String.format("%s: [%d;%d] w:%d h:%d", component, component.getX(), component.getY(), component.getWidth(), component.getHeight()));
+                System.out.println();
 //                panel.addComp(new JTextField("This is a text field"));
             } else if (event.getSource() == addTextField1) {
 //                JTextField textField = new JTextField(10);
@@ -163,22 +173,30 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
                     LocalSection section = sectionViewer.getSections().get(total - 1);
                     sectionViewer.removeSection(section);
                 }
-            } else if (event.getSource() == changeBackground) {
+            } else if (event.getSource() == changeBackground)
                 sectionViewer.setBackground(new Color(rand.nextInt(0xFFFFFF)));
-            } else if (event.getSource() == columnStrategy) {
-//                panel.setLayoutOrganizer(SINGLE_COLUMN);
-            } else if (event.getSource() == rowStrategy) {
-//                panel.setLayoutOrganizer(SINGLE_ROW);
-            } else if (event.getSource() == alignmentCombo)
-                sectionViewer.setAlignment(((Alignment)alignmentCombo.getSelectedItem()).value);
+            else if (event.getSource() == columnStrategy)
+                sectionViewer.setLayoutOrganizer(SINGLE_COLUMN);
+            else if (event.getSource() == rowStrategy)
+                sectionViewer.setLayoutOrganizer(SINGLE_ROW);
+            else if (event.getSource() == alignmentCombo) {
+                Alignment alignment = (Alignment)alignmentCombo.getSelectedItem();
+                SINGLE_COLUMN.setAlignment(alignment.value);
+                SINGLE_ROW.setAlignment(alignment.value);
+                sectionViewer.updateUI();
+            }
         }
 
         // ========== ChangeListener ==========
 
         @Override
         public void stateChanged(ChangeEvent event) {
-            if (event.getSource() == spaceSpinner)
-                sectionViewer.setSpace((Integer)spaceSpinner.getValue());
+            if (event.getSource() == spaceSpinner) {
+                int space = (Integer)spaceSpinner.getValue();
+                SINGLE_COLUMN.setSpace(space);
+                SINGLE_ROW.setSpace(space);
+                sectionViewer.updateUI();
+            }
         }
 
         // ========== static ==========
@@ -219,18 +237,6 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
             public String toString() {
                 return title;
             }
-        }
-    }
-
-    // ========== Main Part ==========
-
-    private static class Section extends JPanel {
-        private static final long serialVersionUID = -3900609325808062356L;
-
-        public Section(int id) {
-            setLayout(new BorderLayout(0, 0));
-            add(new JLabel("Section: " + id), BorderLayout.CENTER);
-            setBorder(BorderFactory.createEtchedBorder());
         }
     }
 }

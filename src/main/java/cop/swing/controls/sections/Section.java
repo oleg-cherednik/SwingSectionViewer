@@ -1,14 +1,12 @@
 package cop.swing.controls.sections;
 
 import javax.swing.JPanel;
-import javax.swing.border.Border;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 
@@ -26,16 +24,11 @@ public abstract class Section extends JPanel {
 
     private final Rectangle2D.Double rect = new Rectangle2D.Double();
 
-    private Border border;
     private boolean selected;
     private Dimension dim = getPreferredSize();
     private Image image;
 
     protected SectionViewer<? extends Section> viewer;
-
-    protected Section() {
-        border = getBorder();
-    }
 
     public final void setViewer(SectionViewer<? extends Section> viewer) {
         this.viewer = viewer;
@@ -46,11 +39,10 @@ public abstract class Section extends JPanel {
     }
 
     public void update() {
-        if (viewer == null)
-            return;
-
-        setBackground(viewer.getSectionBackground(this));
-        revalidate();
+        if (viewer != null) {
+            setBackground(viewer.getSectionBackground(this));
+            revalidate();
+        }
     }
 
     void setSelected(boolean selected) {
@@ -58,7 +50,6 @@ public abstract class Section extends JPanel {
             return;
 
         this.selected = selected;
-//        super.setBorder(selected ? null : border);
         image = selected ? SectionViewer.createImage(this, ALPHA) : null;
 
         for (Component component : getComponents())
@@ -87,7 +78,6 @@ public abstract class Section extends JPanel {
 
         super.paint(g);
 
-
         if (!selected)
             return;
 
@@ -100,8 +90,6 @@ public abstract class Section extends JPanel {
 
             g.setColor(getBackground());
             g.fillRect(0, 0, (int)rect.width, (int)rect.height);
-            g.setColor(SectionViewer.SELECTION_COLOR);
-            ((Graphics2D)g).draw(rect);
         } else if (image != null)
             g.drawImage(image, 0, 0, null);
 

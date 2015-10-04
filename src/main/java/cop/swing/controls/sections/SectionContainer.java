@@ -60,8 +60,17 @@ final class SectionContainer<S extends Section> implements ComponentListener, Ch
      * @param section existed section
      * @return given section position for current container
      */
-    public int getPosition(S section) {
-        return section != null ? sections.indexOf(section) : -1;
+    public int getPosition(Section section) {
+        int pos = -1;
+
+        for (S sec : sections) {
+            pos++;
+
+            if (sec == section)
+                return pos;
+        }
+
+        return -1;
     }
 
     public void add(S section) {
