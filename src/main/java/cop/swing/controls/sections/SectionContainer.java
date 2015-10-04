@@ -10,9 +10,9 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -24,7 +24,7 @@ final class SectionContainer<S extends Section> implements ComponentListener, Ch
     private final Rectangle bounds = new Rectangle();
     private final Point point = new Point();
 
-    private final List<S> sections = new ArrayList<S>();
+    private final List<S> sections = new LinkedList<S>();
     private final SectionViewer<S> viewer;
 
     public SectionContainer(SectionViewer<S> viewer) {
@@ -39,11 +39,7 @@ final class SectionContainer<S extends Section> implements ComponentListener, Ch
         return sections.isEmpty() ? Collections.<S>emptyList() : Collections.unmodifiableList(sections);
     }
 
-    public int getSectionPosition(S section) {
-        return sections.indexOf(section);
-    }
-
-    public void move(int index, S section) {
+    public void move(S section, int index) {
         if (!sections.contains(section))
             return;
 
@@ -56,6 +52,16 @@ final class SectionContainer<S extends Section> implements ComponentListener, Ch
         } catch(Exception ignored) {
             section.setViewer(viewer);
         }
+    }
+
+    /**
+     * Returns current position of given section. If section is not found in current container or it's {@code null}, then -1 returns.
+     *
+     * @param section existed section
+     * @return given section position for current container
+     */
+    public int getPosition(S section) {
+        return section != null ? sections.indexOf(section) : -1;
     }
 
     public void add(S section) {

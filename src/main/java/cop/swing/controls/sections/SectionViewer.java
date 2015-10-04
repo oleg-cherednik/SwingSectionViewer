@@ -11,7 +11,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
-import javax.validation.constraints.NotNull;
 import java.awt.AWTEvent;
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -67,7 +66,6 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     private boolean draggable;
     private S selectedSection;
     private S prvSelectedSection;
-    private boolean dropBlock;    // temporary block section drop to next position to exclude visual gliches
     private boolean dragModeOn;    // true means that drag mode is currently turned on
     private Image dragImage;    // this image is shown under cursor in drag mode
 
@@ -119,7 +117,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     }
 
     public final int getFirstVisibleSection() {
-        return sections.getSectionPosition(sections.getSections().get(0));
+        return sections.getPosition(sections.getSections().get(0));
     }
 
     public final void setSectionsBackground(Color color) {
@@ -149,26 +147,13 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     }
 
     public final Color getSectionBackground(Section section) {
-        int pos = getSectionPosition(section);
+        int pos = panel.getComponentPosition(section);
         int total = panel.getComponentCount();
         return sectionBackgroundColorProvider.getBackground(pos, total);
     }
 
-    public int getSectionPosition(Section section) {
-        int total = panel.getComponentCount();
-
-        if (total == 0 || section == null)
-            return -1;
-
-        for (int i = 0; i < total; i++)
-            if (panel.getComponent(i) == section)
-                return i;
-
-        return -1;
-    }
-
     public void removeSection(S section) {
-        int pos = getSectionPosition(section);
+        int pos = panel.getComponentPosition(section);
 
         if (pos < 0)
             return;
@@ -262,49 +247,6 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     }
 
     /**
-     * Returns section that is closest to the mouse pointer. In any case section will be returned. In limit
-     * point either first or last section will be returned. To exclude visual glitches when we drag small section
-     * over big one, after each position switch, we block switches until dragged section reach it's new positions.
-     *
-     * @param point mouse pointer
-     * @return closest to mouse pointer section.
-     */
-    @NotNull
-    private S getByMouseSection(Point point) {
-//        convertRect(selectedSection, selectedSection.getBounds(bounds), mainPanelDecorator, this.point);
-
-        if (dropBlock && bounds.contains(point))
-            dropBlock = false;
-
-        int dx;
-        int dy;
-        int minX = Integer.MAX_VALUE;
-        int minY = Integer.MAX_VALUE;
-        S sec = selectedSection;
-
-        for (S section : sections.getSections()) {
-            if (section == null)
-                continue;
-
-//            convertRect(section.getParent(), section.getBounds(bounds), mainPanelDecorator, this.point);
-
-            if (bounds.contains(point))
-                return section;
-
-            dx = Math.abs(point.x - bounds.x);
-            dy = Math.abs(point.y - bounds.y);
-
-            if (dx < minX || dy < minY) {
-                minX = dx;
-                minY = dy;
-                sec = section;
-            }
-        }
-
-        return sec;
-    }
-
-    /**
      * Before turn drag mode on in <t>eventPoint</t> property current mouse positin should be sored,
      * <t>uderMouseSection</t> should be not null and contain section under cursor (this section is currentyl dragged)
      *
@@ -324,7 +266,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
             delta.x = eventPoint.x - bounds.x;
             delta.y = eventPoint.y - bounds.y;
 
-            pos = getSectionPosition(selectedSection);
+            pos = panel.getComponentPosition(selectedSection);
         } else
             dragImage = null;
 
@@ -376,15 +318,10 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
             return;
 
         S section = getSectionAt(eventPoint);
-        System.out.println(section);
-        int pos = getSectionPosition(section);
-        System.out.println(pos != this.pos && pos >= 0 && !dropBlock);
+        int pos = panel.getComponentPosition(section);
 
         if (pos != this.pos && pos >= 0) {
-            System.out.println("----------");
-            this.pos = pos;
-            sections.move(pos, selectedSection);
-            panel.removeAll();
+            sections.move(selectedSection, this.pos = pos);
             panel.setComp(sections.getSections());
         }
 
