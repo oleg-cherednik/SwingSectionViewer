@@ -129,10 +129,15 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
             gbc.gridwidth = GridBagConstraints.REMAINDER;
             add(alignmentCombo, gbc);
 
+            gbc.insets.top = 2;
             add(new JSeparator(SwingConstants.HORIZONTAL), gbc);
 
             gbc.weighty = 1;
             add(Box.createVerticalGlue(), gbc);
+
+            addGlue.setEnabled(false);
+            addTextField0.setEnabled(false);
+            addTextField1.setEnabled(false);
         }
 
         private void addListeners() {
