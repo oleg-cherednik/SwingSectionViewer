@@ -47,10 +47,6 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     static final long EVENT_MASK = MOUSE_MOTION_EVENT_MASK | MOUSE_EVENT_MASK | KEY_EVENT_MASK;
     private static final Composite ALPHA_HALF = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
 
-    public static final Color SELECTION_COLOR = Color.red;
-
-    public final Border selectedBorder = BorderFactory.createLineBorder(SELECTION_COLOR, 2);
-
     protected final SectionContainer<S> sections;
     protected final LayoutOrganizerPanel panel;
 
@@ -66,6 +62,9 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
     private S prvSelectedSection;
     private boolean dragModeOn;    // true means that drag mode is currently turned on
     private Image dragImage;    // this image is shown under cursor in drag mode
+    private Color selectionColor = Color.RED;
+    // TODO fix it, should be private
+    public Border selectedBorder = BorderFactory.createLineBorder(selectionColor, 2);
 
     protected SectionViewer() {
         this(null);
@@ -261,7 +260,7 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
             return;
 
         if (on) {
-            selectedSection.setBackground(SELECTION_COLOR);
+            selectedSection.setBackground(selectionColor);
             dragImage = createImage(selectedSection, ALPHA_HALF);
             delta.x = eventBasePoint.x - bounds.x;
             delta.y = eventBasePoint.y - bounds.y;
@@ -284,6 +283,13 @@ public abstract class SectionViewer<S extends Section> extends JScrollPane imple
         eventBasePoint.x = event.getX();
         eventBasePoint.y = event.getY();
         convertPoint((Component)event.getSource(), eventBasePoint, panel);
+    }
+
+    public void setSelectionColor(Color color) {
+        if (color != null && color != selectionColor) {
+            selectionColor = color;
+            selectedBorder = BorderFactory.createLineBorder(selectionColor, 2);
+        }
     }
 
     // ========== AWTEventListener ==========

@@ -1,5 +1,6 @@
 package cop.swing.demo;
 
+import cop.swing.controls.combo.SimpleColorPicker;
 import cop.swing.controls.layouts.SingleColumnLayout;
 import cop.swing.controls.layouts.SingleRowLayout;
 
@@ -62,12 +63,7 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
     // ========== static ==========
 
     public static void main(String... args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new SectionViewerDemo().setVisible(true);
-            }
-        });
+        SwingUtilities.invokeLater(() -> new SectionViewerDemo().setVisible(true));
     }
 
     // ========== classes ==========
@@ -89,7 +85,7 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
         private final JButton columnStrategy = new JButton("Column");
         private final JButton rowStrategy = new JButton("Row");
         private final JSpinner spaceSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
-        private final JComboBox<ColorEnum> selectionColorCombo = new JComboBox<>();
+        private final SimpleColorPicker selectionColorCombo = new SimpleColorPicker();
         private final JComboBox<AlignmentEnum> alignmentCombo = new JComboBox<>();
 
         private final Random rand = new Random();
@@ -105,9 +101,13 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
             setLayout(new GridBagLayout());
 
             for (ColorEnum color : ColorEnum.values())
-                selectionColorCombo.addItem(color);
+                selectionColorCombo.addItem(color.color);
             for (AlignmentEnum alignment : AlignmentEnum.values())
                 alignmentCombo.addItem(alignment);
+
+
+            sectionViewer.setSelectionColor((Color)selectionColorCombo.getSelectedItem());
+
 
             GridBagConstraints gbc = createConstraints();
 
@@ -197,6 +197,8 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
                 SINGLE_COLUMN.setAlignment(alignment.value);
                 SINGLE_ROW.setAlignment(alignment.value);
                 sectionViewer.updateUI();
+            } else if(event.getSource() == selectionColorCombo) {
+                sectionViewer.setSelectionColor((Color)selectionColorCombo.getSelectedItem());
             }
         }
 
