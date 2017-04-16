@@ -89,7 +89,8 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
         private final JButton columnStrategy = new JButton("Column");
         private final JButton rowStrategy = new JButton("Row");
         private final JSpinner spaceSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
-        private final JComboBox<Alignment> alignmentCombo = new JComboBox<>();
+        private final JComboBox<ColorEnum> selectionColorCombo = new JComboBox<>();
+        private final JComboBox<AlignmentEnum> alignmentCombo = new JComboBox<>();
 
         private final Random rand = new Random();
 
@@ -103,7 +104,9 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
         private void init() {
             setLayout(new GridBagLayout());
 
-            for (Alignment alignment : Alignment.values())
+            for (ColorEnum color : ColorEnum.values())
+                selectionColorCombo.addItem(color);
+            for (AlignmentEnum alignment : AlignmentEnum.values())
                 alignmentCombo.addItem(alignment);
 
             GridBagConstraints gbc = createConstraints();
@@ -125,6 +128,9 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
             gbc.gridwidth = GridBagConstraints.REMAINDER;
             add(spaceSpinner, gbc);
             gbc.gridwidth = 1;
+            add(new JLabel("selection color: "), gbc);
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
+            add(selectionColorCombo, gbc);
             add(new JLabel("alignment: "), gbc);
             gbc.gridwidth = GridBagConstraints.REMAINDER;
             add(alignmentCombo, gbc);
@@ -150,6 +156,7 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
             columnStrategy.addActionListener(this);
             rowStrategy.addActionListener(this);
             spaceSpinner.addChangeListener(this);
+            selectionColorCombo.addActionListener(this);
             alignmentCombo.addActionListener(this);
         }
 
@@ -163,8 +170,9 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
             } else if (event.getSource() == addGlue) {
 //                panel.addComp(panel.getLayoutOrganizer() == SINGLE_COLUMN ? Box.createVerticalGlue() : Box.createHorizontalGlue());
             } else if (event.getSource() == addTextField0) {
-                for(Component component : sectionViewer.getSections())
-                    System.out.println(String.format("%s: [%d;%d] w:%d h:%d", component, component.getX(), component.getY(), component.getWidth(), component.getHeight()));
+                for (Component component : sectionViewer.getSections())
+                    System.out.println(String.format("%s: [%d;%d] w:%d h:%d", component, component.getX(), component.getY(), component.getWidth(),
+                            component.getHeight()));
                 System.out.println();
 //                panel.addComp(new JTextField("This is a text field"));
             } else if (event.getSource() == addTextField1) {
@@ -185,7 +193,7 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
             else if (event.getSource() == rowStrategy)
                 sectionViewer.setLayoutOrganizer(SINGLE_ROW);
             else if (event.getSource() == alignmentCombo) {
-                Alignment alignment = (Alignment)alignmentCombo.getSelectedItem();
+                AlignmentEnum alignment = (AlignmentEnum)alignmentCombo.getSelectedItem();
                 SINGLE_COLUMN.setAlignment(alignment.value);
                 SINGLE_ROW.setAlignment(alignment.value);
                 sectionViewer.updateUI();
@@ -219,7 +227,7 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
 
         // ========== enum ==========
 
-        private enum Alignment {
+        private enum AlignmentEnum {
             CENTER("Center", SwingConstants.CENTER),
             NORTH("North", SwingConstants.NORTH),
             SOUTH("South", SwingConstants.SOUTH),
@@ -229,11 +237,42 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
             TRAILING("Trailing", SwingConstants.TRAILING);
 
             private final String title;
-            public final int value;
+            private final int value;
 
-            Alignment(String title, int value) {
+            AlignmentEnum(String title, int value) {
                 this.title = title;
                 this.value = value;
+            }
+
+            // ========== Object ==========
+
+            @Override
+            public String toString() {
+                return title;
+            }
+        }
+
+        private enum ColorEnum {
+            WHITE("white", Color.WHITE),
+            LIGHT_GRAY("light gray", Color.LIGHT_GRAY),
+            GRAY("gray", Color.GRAY),
+            DARK_GRAY("dark gray", Color.DARK_GRAY),
+            BLACK("black", Color.BLACK),
+            RED("red", Color.RED),
+            PINK("pink", Color.PINK),
+            ORANGE("pink", Color.ORANGE),
+            YELLOW("yellow", Color.YELLOW),
+            GREEN("green", Color.GREEN),
+            MAGENTA("magenta", Color.MAGENTA),
+            CYAN("cyan", Color.CYAN),
+            BLUE("blue", Color.BLUE);
+
+            private final String title;
+            private final Color color;
+
+            ColorEnum(String title, Color color) {
+                this.title = title;
+                this.color = color;
             }
 
             // ========== Object ==========

@@ -11,10 +11,9 @@ import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 
 /**
- * {@link Section} it's a simple one part (item or line) in {@link SectionViewer}. It containes at least one part
- * (<b>main part</b>). This part created externally and contains main business part. Additionally it's possible to
- * create other parts, such as control part (with some buttons, e.g. add, delete) or position part to show position
- * of the current section within {@link SectionViewer}.
+ * {@link Section} it's a simple one part (item or line) in {@link SectionViewer}. It containes at least one part (<b>main part</b>). This part
+ * created externally and contains main business part. Additionally it's possible to create other parts, such as control part (with some buttons, e.g.
+ * add, delete) or position part to show position of the current section within {@link SectionViewer}.
  *
  * @author Oleg Cherednik
  * @since 18.07.2015

@@ -6,7 +6,7 @@ import javax.swing.JViewport;
 import java.awt.Point;
 
 /**
- * This {@link JViewport} can block scrolling after view chantes its size (default behaviour is to scroll viewer to the
+ * This {@link JViewport} can block scrolling after view changes its size (default behaviour is to scroll viewer to the
  * bottom). E.g. if {@link #blockAutoScroll} is set to <t>true</t>, then only manual scrolling is available (from GUI
  * by moveing scroll bars and inviking special methods on {@link JViewport}). By default this block is on.
  *
