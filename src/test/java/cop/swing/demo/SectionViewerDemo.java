@@ -16,6 +16,7 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -34,7 +35,7 @@ import java.util.Random;
  */
 public class SectionViewerDemo extends JFrame implements ActionListener {
     private final LocalSectionViewer sectionViewer = new LocalSectionViewer();
-    private final SettingsPanel settingsPanel = new SettingsPanel(sectionViewer);
+    private final SettingsPanel settingsPanel = new SettingsPanel(sectionViewer, this);
 
     public SectionViewerDemo() {
         init();
@@ -62,7 +63,8 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
 
     // ========== static ==========
 
-    public static void main(String... args) {
+    public static void main(String... args) throws Exception {
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         SwingUtilities.invokeLater(() -> new SectionViewerDemo().setVisible(true));
     }
 
@@ -87,11 +89,14 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
         private final JSpinner spaceSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
         private final ColorPicker selectionColorPicker = new ColorPicker();
         private final JComboBox<AlignmentEnum> alignmentCombo = new JComboBox<>();
+        private final JComboBox<ThemeEnum> themeCombo = new JComboBox<>();
 
         private final Random rand = new Random();
+        private final JFrame frame;
 
-        public SettingsPanel(LocalSectionViewer sectionViewer) {
+        public SettingsPanel(LocalSectionViewer sectionViewer, JFrame frame) {
             this.sectionViewer = sectionViewer;
+            this.frame = frame;
 
             init();
             addListeners();
@@ -104,6 +109,8 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
                 selectionColorPicker.addItem(color.color);
             for (AlignmentEnum alignment : AlignmentEnum.values())
                 alignmentCombo.addItem(alignment);
+            for (ThemeEnum theme : ThemeEnum.values())
+                themeCombo.addItem(theme);
 
             selectionColorPicker.setSelectedItem(Color.RED);
             alignmentCombo.setSelectedItem(AlignmentEnum.NORTH);
@@ -130,9 +137,14 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
             add(new JLabel("selection color: "), gbc);
             gbc.gridwidth = GridBagConstraints.REMAINDER;
             add(selectionColorPicker, gbc);
+            gbc.gridwidth = 1;
             add(new JLabel("alignment: "), gbc);
             gbc.gridwidth = GridBagConstraints.REMAINDER;
             add(alignmentCombo, gbc);
+            gbc.gridwidth = 1;
+            add(new JLabel("theme: "), gbc);
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
+            add(themeCombo, gbc);
 
             gbc.insets.top = 2;
             add(new JSeparator(SwingConstants.HORIZONTAL), gbc);
@@ -160,6 +172,7 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
             spaceSpinner.addChangeListener(this);
             selectionColorPicker.addActionListener(this);
             alignmentCombo.addActionListener(this);
+            themeCombo.addActionListener(this);
         }
 
         // ========== ActionListener ==========
@@ -198,6 +211,8 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
                 onAlignmentCombo();
             else if (event.getSource() == selectionColorPicker)
                 onSelectionColorPicker();
+            else if (event.getSource() == themeCombo)
+                onThemeCombo();
         }
 
         private void onAlignmentCombo() {
@@ -209,6 +224,10 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
 
         private void onSelectionColorPicker() {
             sectionViewer.setSelectionColor(selectionColorPicker.getSelectedItem());
+        }
+
+        private void onThemeCombo() {
+            ((ThemeEnum)themeCombo.getSelectedItem()).apply(frame);
         }
 
         // ========== ChangeListener ==========
@@ -284,6 +303,75 @@ public class SectionViewerDemo extends JFrame implements ActionListener {
             ColorEnum(String title, Color color) {
                 this.title = title;
                 this.color = color;
+            }
+
+            // ========== Object ==========
+
+            @Override
+            public String toString() {
+                return title;
+            }
+        }
+
+        private enum ThemeEnum {
+            SYSTEM("System") {
+                @Override
+                protected void setLookAndFeel() throws Exception {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                }
+            },
+            CROSS_PLATFORM("Cross-Platform") {
+                @Override
+                protected void setLookAndFeel() throws Exception {
+                    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+                }
+            },
+            METAL("Metal") {
+                @Override
+                protected void setLookAndFeel() throws Exception {
+                    UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+                }
+            },
+            NIMBUS("Nimbus") {
+                @Override
+                protected void setLookAndFeel() throws Exception {
+                    UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+                }
+            },
+            MOTIF("Motif") {
+                @Override
+                protected void setLookAndFeel() throws Exception {
+                    UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+                }
+            },
+            WINDOWS("Windows") {
+                @Override
+                protected void setLookAndFeel() throws Exception {
+                    UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+                }
+            },
+            WINDOWS_CLASSIC("Windows Classic") {
+                @Override
+                protected void setLookAndFeel() throws Exception {
+                    UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel");
+                }
+            };
+
+            private final String title;
+
+            ThemeEnum(String title) {
+                this.title = title;
+            }
+
+            protected abstract void setLookAndFeel() throws Exception;
+
+            public void apply(JFrame frame) {
+                try {
+                    setLookAndFeel();
+                    SwingUtilities.updateComponentTreeUI(frame);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             // ========== Object ==========
